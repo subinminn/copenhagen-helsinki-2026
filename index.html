@@ -291,23 +291,36 @@ select.form-input { -webkit-appearance:none; appearance:none; background-image:u
 <div id="page-currency" class="page">
   <div class="currency-page">
     <h2>환율 계산기</h2>
-    <p class="rate-info">환율은 직접 입력해서 최신 정보로 업데이트할 수 있어요.</p>
 
-    <div class="converter-card">
-      <div class="rate-edit-row">
-        <label>1 USD =</label>
-        <input type="number" id="rate-dkk" value="6.96" step="0.01" oninput="saveRates();calcConv()"> DKK
-      </div>
-      <div class="rate-edit-row">
-        <label>1 USD =</label>
-        <input type="number" id="rate-eur" value="0.93" step="0.001" oninput="saveRates();calcConv()"> EUR
-      </div>
-      <div class="rate-edit-row">
-        <label>1 USD =</label>
-        <input type="number" id="rate-krw" value="1370" step="1" oninput="saveRates();calcConv()"> KRW
-      </div>
+    <!-- live rate status bar -->
+    <div id="rate-status" style="display:flex;align-items:center;gap:8px;margin-bottom:1.25rem;padding:10px 14px;background:var(--white);border:1px solid var(--border);border-radius:8px;font-size:12px;color:var(--muted);">
+      <span id="rate-dot" style="width:8px;height:8px;border-radius:50%;background:var(--border);flex-shrink:0;"></span>
+      <span id="rate-status-text">환율 불러오는 중...</span>
+      <button onclick="fetchRates()" style="margin-left:auto;padding:4px 10px;font-size:11px;background:none;border:1px solid var(--border);border-radius:999px;cursor:pointer;font-family:'DM Sans',sans-serif;color:var(--muted);">새로고침</button>
     </div>
 
+    <!-- manual override -->
+    <details style="margin-bottom:1rem;">
+      <summary style="font-size:12px;color:var(--muted);cursor:pointer;padding:6px 0;list-style:none;display:flex;align-items:center;gap:6px;">
+        <span style="font-size:10px;">▶</span> 환율 직접 수정
+      </summary>
+      <div class="converter-card" style="margin-top:8px;">
+        <div class="rate-edit-row">
+          <label>1 USD =</label>
+          <input type="number" id="rate-dkk" value="6.96" step="0.01" oninput="saveRates();updateRateCards();convertFrom('usd')"> DKK
+        </div>
+        <div class="rate-edit-row">
+          <label>1 USD =</label>
+          <input type="number" id="rate-eur" value="0.93" step="0.001" oninput="saveRates();updateRateCards();convertFrom('usd')"> EUR
+        </div>
+        <div class="rate-edit-row">
+          <label>1 USD =</label>
+          <input type="number" id="rate-krw" value="1370" step="1" oninput="saveRates();updateRateCards();convertFrom('usd')"> KRW
+        </div>
+      </div>
+    </details>
+
+    <!-- converter -->
     <div class="converter-card">
       <div class="conv-row">
         <span class="conv-label">USD</span>
@@ -413,7 +426,7 @@ function showPage(id, btn) {
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
   document.getElementById('page-' + id).classList.add('active');
   btn.classList.add('active');
-  if (id === 'currency') updateRateCards();
+  if (id === 'currency') fetchRates();
   if (id === 'expense') renderExpenses();
 }
 
@@ -612,6 +625,82 @@ function filterCity(city, btn) {
 }
 
 // ─── CURRENCY ───
+// ─── LIVE RATES ───
+const RATE_CACHE_KEY = 'cph_hel_rates_cache';
+const CACHE_TTL = 60 * 60 * 1000; // 1 hour
+
+function setRateStatus(state, text) {
+  const dot = document.getElementById('rate-dot');
+  const msg = document.getElementById('rate-status-text');
+  if (!dot || !msg) return;
+  const colors = { loading: '#D8D3C8', ok: '#2D5A3D', error: '#8B3A3A', cached: '#C4622D' };
+  dot.style.background = colors[state] || colors.loading;
+  msg.textContent = text;
+}
+
+async function fetchRates() {
+  // Check cache first (max 1 hour old)
+  try {
+    const cached = JSON.parse(localStorage.getItem(RATE_CACHE_KEY));
+    if (cached && Date.now() - cached.ts < CACHE_TTL) {
+      applyRates(cached.rates, new Date(cached.ts));
+      setRateStatus('cached', '환율 캐시 사용 중 · ' + formatTime(new Date(cached.ts)));
+      return;
+    }
+  } catch {}
+
+  setRateStatus('loading', '실시간 환율 불러오는 중...');
+
+  // Primary: fawazahmed0 CDN (no API key, no rate limit)
+  try {
+    const res = await fetch('https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/usd.min.json');
+    if (res.ok) {
+      const data = await res.json();
+      const r = data.usd;
+      const rates = { dkk: +r.dkk.toFixed(4), eur: +r.eur.toFixed(4), krw: +Math.round(r.krw) };
+      localStorage.setItem(RATE_CACHE_KEY, JSON.stringify({ rates, ts: Date.now() }));
+      applyRates(rates, new Date());
+      setRateStatus('ok', '실시간 환율 · 방금 업데이트됨');
+      return;
+    }
+  } catch {}
+
+  // Fallback: Frankfurter (ECB data, no API key)
+  try {
+    const res = await fetch('https://api.frankfurter.dev/v2/rates?base=USD&quotes=DKK,EUR,KRW');
+    if (res.ok) {
+      const data = await res.json();
+      const r = data.rates;
+      const rates = { dkk: +r.DKK.toFixed(4), eur: +r.EUR.toFixed(4), krw: +Math.round(r.KRW) };
+      localStorage.setItem(RATE_CACHE_KEY, JSON.stringify({ rates, ts: Date.now() }));
+      applyRates(rates, new Date());
+      setRateStatus('ok', '실시간 환율 (ECB) · 방금 업데이트됨');
+      return;
+    }
+  } catch {}
+
+  // Both failed — use saved or default
+  const s = getState();
+  const fallback = s.rates || { dkk: 6.96, eur: 0.93, krw: 1370 };
+  applyRates(fallback, null);
+  setRateStatus('error', '환율 불러오기 실패 · 저장된 값 사용 중');
+}
+
+function applyRates(rates, date) {
+  const s = getState();
+  s.rates = rates;
+  localStorage.setItem(KEY, JSON.stringify(s));
+  document.getElementById('rate-dkk').value = rates.dkk;
+  document.getElementById('rate-eur').value = rates.eur;
+  document.getElementById('rate-krw').value = rates.krw;
+  updateRateCards();
+}
+
+function formatTime(d) {
+  if (!d) return '';
+  return d.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
+}
+
 function saveRates() {
   const s = getState();
   s.rates = {
@@ -620,7 +709,6 @@ function saveRates() {
     krw: parseFloat(document.getElementById('rate-krw').value) || 1370,
   };
   localStorage.setItem(KEY, JSON.stringify(s));
-  updateRateCards();
 }
 
 function getRates() {
@@ -629,9 +717,6 @@ function getRates() {
 
 function updateRateCards() {
   const r = getRates();
-  document.getElementById('rate-dkk').value = r.dkk;
-  document.getElementById('rate-eur').value = r.eur;
-  document.getElementById('rate-krw').value = r.krw;
   document.getElementById('dkk-to-usd').textContent = (1/r.dkk).toFixed(4);
   document.getElementById('dkk-to-krw').textContent = Math.round(r.krw/r.dkk).toLocaleString();
   document.getElementById('eur-to-usd').textContent = (1/r.eur).toFixed(4);
@@ -742,7 +827,7 @@ function renderExpenses() {
   initDateSelect();
   renderTodos();
   renderDays();
-  updateRateCards();
+  fetchRates();
   renderExpenses();
 })();
 </script>
