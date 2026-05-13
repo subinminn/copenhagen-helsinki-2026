@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Copenhagen + Helsinki · May 2025</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --cream: #F5F0E8;
+  --ink: #1A1814;
+  --ink2: #3D3A34;
+  --muted: #8C8880;
+  --border: #D8D3C8;
+  --accent: #C4622D;
+  --green: #2D5A3D;
+  --white: #FFFFFF;
+  --red: #8B3A3A;
+  --blue: #1C3A5E;
+}
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+html { font-size:16px; }
+body { background:var(--cream); color:var(--ink); font-family:'DM Sans',sans-serif; font-weight:300; line-height:1.6; min-height:100vh; }
+
+/* NAV */
+.nav { position:sticky; top:0; z-index:100; background:var(--ink); display:flex; overflow-x:auto; scrollbar-width:none; }
+.nav::-webkit-scrollbar { display:none; }
+.nav-btn { flex:none; padding:12px 18px; font-size:12px; font-weight:500; letter-spacing:0.06em; text-transform:uppercase; color:rgba(255,255,255,0.5); background:none; border:none; cursor:pointer; font-family:'DM Sans',sans-serif; white-space:nowrap; border-bottom:2px solid transparent; transition:all 0.15s; }
+.nav-btn.active { color:white; border-bottom-color:var(--accent); }
+
+/* PAGES */
+.page { display:none; }
+.page.active { display:block; }
+
+/* TOAST */
+#toast { position:fixed; bottom:20px; right:16px; background:var(--ink); color:white; font-size:12px; padding:8px 16px; border-radius:999px; opacity:0; transform:translateY(6px); transition:all 0.25s; pointer-events:none; z-index:999; font-family:'DM Sans',sans-serif; }
+#toast.show { opacity:1; transform:translateY(0); }
+
+/* ─── HEADER ─── */
+.header { padding:2.5rem 1.25rem 2rem; border-bottom:1px solid var(--border); position:relative; overflow:hidden; }
+.header::after { content:''; position:absolute; top:-80px; right:-80px; width:280px; height:280px; border-radius:50%; background:radial-gradient(circle,rgba(196,98,45,0.07) 0%,transparent 70%); pointer-events:none; }
+.eyebrow { font-size:10px; font-weight:500; letter-spacing:0.15em; text-transform:uppercase; color:var(--accent); margin-bottom:0.5rem; }
+.header h1 { font-family:'DM Serif Display',serif; font-size:clamp(1.8rem,6vw,3rem); line-height:1.1; margin-bottom:0.75rem; }
+.header h1 em { font-style:italic; color:var(--accent); }
+.header-meta { display:flex; flex-wrap:wrap; gap:1rem 2rem; margin-top:1.25rem; }
+.meta-item { display:flex; flex-direction:column; gap:1px; }
+.meta-label { font-size:10px; letter-spacing:0.1em; text-transform:uppercase; color:var(--muted); font-weight:500; }
+.meta-value { font-size:13px; color:var(--ink2); }
+
+/* PROGRESS */
+.prog-wrap { padding:1rem 1.25rem; background:var(--white); border-bottom:1px solid var(--border); }
+.prog-top { display:flex; justify-content:space-between; font-size:11px; color:var(--muted); margin-bottom:5px; font-weight:500; }
+.prog-track { height:3px; background:var(--border); border-radius:2px; overflow:hidden; }
+.prog-fill { height:100%; background:var(--accent); border-radius:2px; transition:width 0.4s ease; width:0; }
+
+/* BUDGET BAR */
+.budget-bar { background:var(--ink); color:white; padding:1rem 1.25rem; display:flex; flex-wrap:wrap; gap:1rem 2rem; }
+.b-item { display:flex; flex-direction:column; gap:1px; }
+.b-label { font-size:10px; letter-spacing:0.08em; text-transform:uppercase; color:rgba(255,255,255,0.4); font-weight:500; }
+.b-val { font-size:13px; color:white; }
+.b-save { font-size:11px; color:#7ECFA0; margin-left:3px; }
+.b-total .b-val { font-family:'DM Serif Display',serif; font-size:18px; }
+
+/* FILTERS */
+.filters { display:flex; gap:6px; flex-wrap:wrap; padding:1rem 1.25rem 0; }
+.filter-btn { font-size:11.5px; padding:5px 12px; border-radius:999px; border:1px solid var(--border); background:var(--white); cursor:pointer; font-family:'DM Sans',sans-serif; font-weight:400; color:var(--ink2); transition:all 0.15s; }
+.filter-btn.active { background:var(--ink); color:white; border-color:var(--ink); }
+
+/* MAIN CONTENT */
+.content { padding:0 1.25rem 5rem; }
+
+/* SECTION TITLE */
+.section-title { font-family:'DM Serif Display',serif; font-size:1.15rem; color:var(--ink); margin-bottom:0.9rem; }
+
+/* TODO */
+.todo-section { margin-top:2rem; background:var(--white); border:1px solid var(--border); border-radius:10px; padding:1.25rem; }
+.checklist { display:flex; flex-direction:column; }
+.check-item { display:flex; align-items:flex-start; gap:10px; padding:7px 0; border-bottom:1px solid var(--cream); cursor:pointer; }
+.check-item:last-child { border-bottom:none; }
+.check-box { width:17px; height:17px; flex-shrink:0; margin-top:2px; border:1.5px solid var(--border); border-radius:3px; transition:all 0.15s; display:flex; align-items:center; justify-content:center; }
+.check-item.done .check-box { background:var(--green); border-color:var(--green); }
+.check-item.done .check-box::after { content:''; width:4px; height:7px; border-right:1.5px solid white; border-bottom:1.5px solid white; transform:rotate(45deg) translate(-0.5px,-1px); display:block; }
+.check-item.done .check-text { text-decoration:line-through; color:var(--muted); }
+.check-text { font-size:13px; color:var(--ink2); line-height:1.5; flex:1; }
+.check-del { background:none; border:none; color:var(--muted); cursor:pointer; font-size:16px; padding:0 4px; opacity:0.5; transition:opacity 0.15s; flex-shrink:0; }
+.check-del:hover { opacity:1; color:var(--red); }
+.add-todo-row { display:flex; gap:8px; margin-top:10px; }
+.add-todo-row input { flex:1; font-family:'DM Sans',sans-serif; font-size:13px; padding:7px 10px; border:1px solid var(--border); border-radius:6px; background:var(--cream); color:var(--ink); outline:none; }
+.add-todo-row input:focus { border-color:var(--accent); }
+.btn-add { padding:7px 14px; background:var(--accent); color:white; border:none; border-radius:6px; font-size:12px; font-weight:500; cursor:pointer; font-family:'DM Sans',sans-serif; white-space:nowrap; }
+
+/* CITY SECTION */
+.city-section { margin-top:2.5rem; }
+.city-header { display:flex; align-items:baseline; gap:0.6rem; margin-bottom:0.9rem; padding-bottom:0.6rem; border-bottom:1px solid var(--border); }
+.city-flag { font-size:17px; }
+.city-name { font-family:'DM Serif Display',serif; font-size:1.3rem; color:var(--ink); }
+.city-dates { font-size:11px; color:var(--muted); }
+.city-hotel { margin-left:auto; font-size:11px; color:var(--muted); font-style:italic; }
+
+/* DAY CARD */
+.day-card { border:1px solid var(--border); border-radius:8px; background:var(--white); margin-bottom:6px; overflow:hidden; }
+.day-header { display:flex; align-items:center; gap:0.9rem; padding:12px 14px; cursor:pointer; user-select:none; }
+.day-num { display:flex; flex-direction:column; align-items:center; min-width:32px; }
+.day-dow { font-size:9px; font-weight:500; letter-spacing:0.08em; text-transform:uppercase; color:var(--muted); }
+.day-d { font-family:'DM Serif Display',serif; font-size:1.25rem; line-height:1; color:var(--ink); }
+.vr { width:1px; height:28px; background:var(--border); flex-shrink:0; }
+.day-info { flex:1; min-width:0; }
+.day-title-text { font-size:13px; font-weight:500; color:var(--ink); margin-bottom:1px; }
+.day-sub { font-size:11px; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.day-chk { width:19px; height:19px; border:1.5px solid var(--border); border-radius:50%; cursor:pointer; flex-shrink:0; display:flex; align-items:center; justify-content:center; transition:all 0.15s; background:var(--white); }
+.day-chk.on { background:var(--accent); border-color:var(--accent); }
+.day-chk.on::after { content:''; width:4px; height:8px; border-right:2px solid white; border-bottom:2px solid white; transform:rotate(45deg) translate(-0.5px,-1px); display:block; }
+.chevron { width:13px; height:13px; flex-shrink:0; color:var(--muted); transition:transform 0.2s; }
+.day-card.open .chevron { transform:rotate(180deg); }
+.day-body { display:none; padding:2px 14px 13px; border-top:1px solid var(--border); }
+.day-card.open .day-body { display:block; }
+
+/* EDIT MODE */
+.day-edit { display:none; padding:10px 14px; border-top:1px solid var(--border); background:var(--cream); }
+.day-card.editing .day-body { display:none; }
+.day-card.editing .day-edit { display:block; }
+.edit-field { width:100%; font-family:'DM Sans',sans-serif; font-size:13px; padding:7px 10px; border:1px solid var(--border); border-radius:6px; background:var(--white); color:var(--ink); outline:none; margin-bottom:6px; resize:vertical; }
+.edit-field:focus { border-color:var(--accent); }
+.edit-actions { display:flex; gap:6px; justify-content:flex-end; }
+.btn-save-edit { padding:6px 14px; background:var(--accent); color:white; border:none; border-radius:6px; font-size:12px; font-weight:500; cursor:pointer; font-family:'DM Sans',sans-serif; }
+.btn-cancel-edit { padding:6px 12px; background:none; color:var(--muted); border:1px solid var(--border); border-radius:6px; font-size:12px; cursor:pointer; font-family:'DM Sans',sans-serif; }
+.btn-edit-day { padding:3px 10px; font-size:11px; background:none; border:1px solid var(--border); border-radius:999px; color:var(--muted); cursor:pointer; font-family:'DM Sans',sans-serif; white-space:nowrap; }
+
+/* TAGS */
+.tags { display:flex; flex-wrap:wrap; gap:4px; padding:9px 0 6px; }
+.tag { font-size:11px; padding:2px 8px; border-radius:999px; border:1px solid transparent; font-weight:400; }
+.tp { background:#E8EEF5; color:#1C3A5E; border-color:#C5D5E8; }
+.tf { background:#EEF5EC; color:#2D5A3D; border-color:#C5DCC0; }
+.tv { background:#F5EEE8; color:#7A4A2A; border-color:#DECCBE; }
+.tm { background:#F0EEF8; color:#3A3A8B; border-color:#C8C8E8; }
+.tw { background:#F5EEEE; color:#8B3A3A; border-color:#E8C5C5; }
+.day-note { font-size:12px; color:var(--ink2); line-height:1.65; padding:7px 11px; background:var(--cream); border-radius:0 4px 4px 0; border-left:2px solid var(--accent); font-style:italic; margin-top:2px; }
+
+/* ─── CURRENCY PAGE ─── */
+.currency-page { padding:1.5rem 1.25rem 5rem; }
+.currency-page h2 { font-family:'DM Serif Display',serif; font-size:1.4rem; margin-bottom:1.5rem; }
+.rate-info { font-size:11px; color:var(--muted); margin-bottom:1.5rem; font-style:italic; }
+.converter-card { background:var(--white); border:1px solid var(--border); border-radius:10px; padding:1.25rem; margin-bottom:1rem; }
+.conv-row { display:flex; align-items:center; gap:10px; margin-bottom:10px; }
+.conv-row:last-child { margin-bottom:0; }
+.conv-label { font-size:11px; font-weight:500; letter-spacing:0.06em; text-transform:uppercase; color:var(--muted); min-width:36px; }
+.conv-input { flex:1; font-family:'DM Sans',sans-serif; font-size:18px; font-weight:300; padding:8px 12px; border:1px solid var(--border); border-radius:6px; background:var(--cream); color:var(--ink); outline:none; width:100%; }
+.conv-input:focus { border-color:var(--accent); }
+.conv-arrow { font-size:18px; color:var(--muted); text-align:center; margin:6px 0; }
+.rates-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:1.25rem; }
+.rate-card { background:var(--white); border:1px solid var(--border); border-radius:8px; padding:0.9rem 1rem; }
+.rate-from { font-size:11px; color:var(--muted); font-weight:500; text-transform:uppercase; letter-spacing:0.06em; }
+.rate-val { font-family:'DM Serif Display',serif; font-size:1.4rem; color:var(--ink); margin:2px 0; }
+.rate-desc { font-size:11px; color:var(--muted); }
+.rate-edit-row { display:flex; align-items:center; gap:6px; margin-bottom:8px; }
+.rate-edit-row label { font-size:12px; color:var(--muted); min-width:80px; }
+.rate-edit-row input { flex:1; font-family:'DM Sans',sans-serif; font-size:13px; padding:5px 8px; border:1px solid var(--border); border-radius:5px; background:var(--cream); color:var(--ink); outline:none; }
+.rate-edit-row input:focus { border-color:var(--accent); }
+
+/* ─── EXPENSE PAGE ─── */
+.expense-page { padding:1.5rem 1.25rem 5rem; }
+.expense-page h2 { font-family:'DM Serif Display',serif; font-size:1.4rem; margin-bottom:1.25rem; }
+.expense-summary { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:1.5rem; }
+.sum-card { background:var(--white); border:1px solid var(--border); border-radius:8px; padding:0.9rem 1rem; }
+.sum-label { font-size:10px; color:var(--muted); font-weight:500; text-transform:uppercase; letter-spacing:0.08em; margin-bottom:3px; }
+.sum-val { font-family:'DM Serif Display',serif; font-size:1.35rem; color:var(--ink); }
+.sum-sub { font-size:11px; color:var(--muted); margin-top:1px; }
+.add-expense-card { background:var(--white); border:1px solid var(--border); border-radius:10px; padding:1.25rem; margin-bottom:1.5rem; }
+.add-expense-card h3 { font-size:13px; font-weight:500; margin-bottom:12px; color:var(--ink2); }
+.form-row { display:flex; flex-direction:column; gap:6px; margin-bottom:8px; }
+.form-row label { font-size:11px; font-weight:500; color:var(--muted); text-transform:uppercase; letter-spacing:0.06em; }
+.form-input { font-family:'DM Sans',sans-serif; font-size:13px; padding:8px 10px; border:1px solid var(--border); border-radius:6px; background:var(--cream); color:var(--ink); outline:none; width:100%; }
+.form-input:focus { border-color:var(--accent); }
+.form-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:8px; }
+.form-row-inline { display:flex; gap:8px; align-items:flex-end; margin-bottom:12px; }
+.form-row-inline .form-row { flex:1; margin-bottom:0; }
+select.form-input { -webkit-appearance:none; appearance:none; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M2 4l4 4 4-4' stroke='%238C8880' stroke-width='1.5' fill='none'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 10px center; padding-right:28px; }
+.btn-submit { width:100%; padding:10px; background:var(--accent); color:white; border:none; border-radius:6px; font-size:13px; font-weight:500; cursor:pointer; font-family:'DM Sans',sans-serif; }
+.expense-list { display:flex; flex-direction:column; gap:6px; }
+.day-expense-group { background:var(--white); border:1px solid var(--border); border-radius:8px; overflow:hidden; }
+.day-expense-header { display:flex; justify-content:space-between; align-items:center; padding:10px 14px; background:var(--cream); border-bottom:1px solid var(--border); }
+.day-expense-date { font-size:12px; font-weight:500; color:var(--ink2); }
+.day-expense-total { font-size:12px; color:var(--accent); font-weight:500; }
+.expense-item { display:flex; align-items:center; padding:9px 14px; border-bottom:1px solid var(--cream); gap:10px; }
+.expense-item:last-child { border-bottom:none; }
+.exp-cat { width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:13px; flex-shrink:0; }
+.exp-info { flex:1; min-width:0; }
+.exp-name { font-size:13px; color:var(--ink2); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.exp-meta { font-size:11px; color:var(--muted); }
+.exp-amt { font-size:13px; font-weight:500; color:var(--ink); white-space:nowrap; }
+.exp-del { background:none; border:none; color:var(--muted); cursor:pointer; font-size:14px; padding:2px; opacity:0.5; }
+.exp-del:hover { opacity:1; color:var(--red); }
+.cat-food { background:#EEF5EC; }
+.cat-trans { background:#F0EEF8; }
+.cat-stay { background:#E8EEF5; }
+.cat-shop { background:#F5EEE8; }
+.cat-enter { background:#FAEEDA; }
+.cat-other { background:#F5F0E8; }
+.empty-state { text-align:center; padding:2.5rem 1rem; color:var(--muted); font-size:13px; font-style:italic; }
+
+@media (min-width:600px) {
+  .header { padding:3rem 2rem 2.5rem; }
+  .content, .currency-page, .expense-page { padding-left:2rem; padding-right:2rem; }
+  .budget-bar { padding:1.25rem 2rem; }
+  .filters { padding:1.25rem 2rem 0; }
+  .prog-wrap { padding:1.25rem 2rem; }
+  .expense-summary { grid-template-columns:repeat(4,1fr); }
+  .form-grid { grid-template-columns:repeat(3,1fr); }
+}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <button class="nav-btn active" onclick="showPage('itinerary',this)">일정</button>
+  <button class="nav-btn" onclick="showPage('currency',this)">환율</button>
+  <button class="nav-btn" onclick="showPage('expense',this)">가계부</button>
+</nav>
+
+<div id="toast"></div>
+
+<!-- ══════════════════ ITINERARY PAGE ══════════════════ -->
+<div id="page-itinerary" class="page active">
+
+  <div class="header">
+    <div class="eyebrow">Travel Plan · May 2025</div>
+    <h1>Copenhagen<br>+ <em>Helsinki</em></h1>
+    <div class="header-meta">
+      <div class="meta-item"><span class="meta-label">출발</span><span class="meta-value">May 16, Detroit</span></div>
+      <div class="meta-item"><span class="meta-label">귀국</span><span class="meta-value">May 26, Helsinki</span></div>
+      <div class="meta-item"><span class="meta-label">기간</span><span class="meta-value">10박 11일</span></div>
+      <div class="meta-item"><span class="meta-label">테마</span><span class="meta-value">커피 · 디자인 · 필름</span></div>
+    </div>
+  </div>
+
+  <div class="prog-wrap">
+    <div class="prog-top"><span>준비 진행도</span><span id="pct">0%</span></div>
+    <div class="prog-track"><div class="prog-fill" id="pfill"></div></div>
+  </div>
+
+  <div class="budget-bar">
+    <div class="b-item"><span class="b-label">항공 DTW↔CPH/HEL</span><span class="b-val">$649<span class="b-save"> ↓$200</span></span></div>
+    <div class="b-item"><span class="b-label">코펜하겐 7박</span><span class="b-val">$770</span></div>
+    <div class="b-item"><span class="b-label">헬싱키 2박</span><span class="b-val">$154<span class="b-save"> ↓$100</span></span></div>
+    <div class="b-item"><span class="b-label">CPH→HEL</span><span class="b-val">DKK 978</span></div>
+    <div class="b-item b-total"><span class="b-label">확정 합계</span><span class="b-val">≈ $1,713</span></div>
+  </div>
+
+  <div class="filters">
+    <button class="filter-btn active" onclick="filterCity('all',this)">전체</button>
+    <button class="filter-btn" onclick="filterCity('dk',this)">🇩🇰 코펜하겐</button>
+    <button class="filter-btn" onclick="filterCity('fi',this)">🇫🇮 헬싱키</button>
+  </div>
+
+  <div class="content">
+    <!-- CHECKLIST -->
+    <div class="todo-section">
+      <div class="section-title">예약 & 준비 체크리스트</div>
+      <div class="checklist" id="todo-list"></div>
+      <div class="add-todo-row">
+        <input type="text" id="todo-input" placeholder="항목 추가..." onkeydown="if(event.key==='Enter')addTodo()">
+        <button class="btn-add" onclick="addTodo()">추가</button>
+      </div>
+    </div>
+
+    <!-- 코펜하겐 -->
+    <div class="city-section" data-city="dk">
+      <div class="city-header">
+        <span class="city-flag">🇩🇰</span>
+        <span class="city-name">Copenhagen</span>
+        <span class="city-dates">May 16–24</span>
+        <span class="city-hotel">시티허브 호텔</span>
+      </div>
+      <div id="days-dk"></div>
+    </div>
+
+    <!-- 헬싱키 -->
+    <div class="city-section" data-city="fi">
+      <div class="city-header">
+        <span class="city-flag">🇫🇮</span>
+        <span class="city-name">Helsinki</span>
+        <span class="city-dates">May 24–26</span>
+        <span class="city-hotel">VALO Hotel</span>
+      </div>
+      <div id="days-fi"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════ CURRENCY PAGE ══════════════════ -->
+<div id="page-currency" class="page">
+  <div class="currency-page">
+    <h2>환율 계산기</h2>
+    <p class="rate-info">환율은 직접 입력해서 최신 정보로 업데이트할 수 있어요.</p>
+
+    <div class="converter-card">
+      <div class="rate-edit-row">
+        <label>1 USD =</label>
+        <input type="number" id="rate-dkk" value="6.96" step="0.01" oninput="saveRates();calcConv()"> DKK
+      </div>
+      <div class="rate-edit-row">
+        <label>1 USD =</label>
+        <input type="number" id="rate-eur" value="0.93" step="0.001" oninput="saveRates();calcConv()"> EUR
+      </div>
+      <div class="rate-edit-row">
+        <label>1 USD =</label>
+        <input type="number" id="rate-krw" value="1370" step="1" oninput="saveRates();calcConv()"> KRW
+      </div>
+    </div>
+
+    <div class="converter-card">
+      <div class="conv-row">
+        <span class="conv-label">USD</span>
+        <input class="conv-input" type="number" id="c-usd" placeholder="0" oninput="convertFrom('usd')">
+      </div>
+      <div class="conv-arrow">⇅</div>
+      <div class="conv-row">
+        <span class="conv-label">DKK</span>
+        <input class="conv-input" type="number" id="c-dkk" placeholder="0" oninput="convertFrom('dkk')">
+      </div>
+      <div class="conv-row" style="margin-top:8px">
+        <span class="conv-label">EUR</span>
+        <input class="conv-input" type="number" id="c-eur" placeholder="0" oninput="convertFrom('eur')">
+      </div>
+      <div class="conv-row" style="margin-top:8px">
+        <span class="conv-label">KRW</span>
+        <input class="conv-input" type="number" id="c-krw" placeholder="0" oninput="convertFrom('krw')">
+      </div>
+    </div>
+
+    <div class="rates-grid">
+      <div class="rate-card">
+        <div class="rate-from">DKK 1</div>
+        <div class="rate-val" id="dkk-to-usd">-</div>
+        <div class="rate-desc">USD</div>
+      </div>
+      <div class="rate-card">
+        <div class="rate-from">DKK 1</div>
+        <div class="rate-val" id="dkk-to-krw">-</div>
+        <div class="rate-desc">KRW</div>
+      </div>
+      <div class="rate-card">
+        <div class="rate-from">EUR 1</div>
+        <div class="rate-val" id="eur-to-usd">-</div>
+        <div class="rate-desc">USD</div>
+      </div>
+      <div class="rate-card">
+        <div class="rate-from">EUR 1</div>
+        <div class="rate-val" id="eur-to-krw">-</div>
+        <div class="rate-desc">KRW</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════ EXPENSE PAGE ══════════════════ -->
+<div id="page-expense" class="page">
+  <div class="expense-page">
+    <h2>여행 가계부</h2>
+
+    <div class="expense-summary">
+      <div class="sum-card"><div class="sum-label">총 지출</div><div class="sum-val" id="total-usd">$0</div><div class="sum-sub">USD 기준</div></div>
+      <div class="sum-card"><div class="sum-label">DKK 지출</div><div class="sum-val" id="total-dkk">0</div><div class="sum-sub">DKK</div></div>
+      <div class="sum-card"><div class="sum-label">EUR 지출</div><div class="sum-val" id="total-eur">0</div><div class="sum-sub">EUR</div></div>
+      <div class="sum-card"><div class="sum-label">항목 수</div><div class="sum-val" id="total-count">0</div><div class="sum-sub">건</div></div>
+    </div>
+
+    <div class="add-expense-card">
+      <h3>지출 추가</h3>
+      <div class="form-row"><label>날짜</label><select class="form-input" id="exp-date"></select></div>
+      <div class="form-grid">
+        <div class="form-row"><label>카테고리</label>
+          <select class="form-input" id="exp-cat">
+            <option value="food">🍽 음식·카페</option>
+            <option value="trans">🚇 교통</option>
+            <option value="stay">🏨 숙소</option>
+            <option value="shop">🛍 쇼핑</option>
+            <option value="enter">🎫 관광·입장</option>
+            <option value="other">📌 기타</option>
+          </select>
+        </div>
+        <div class="form-row"><label>통화</label>
+          <select class="form-input" id="exp-currency">
+            <option value="USD">USD $</option>
+            <option value="DKK">DKK kr</option>
+            <option value="EUR">EUR €</option>
+          </select>
+        </div>
+        <div class="form-row"><label>금액</label><input type="number" class="form-input" id="exp-amount" placeholder="0" min="0"></div>
+      </div>
+      <div class="form-row" style="margin-bottom:12px"><label>내용</label><input type="text" class="form-input" id="exp-desc" placeholder="예: 루이지애나 미술관 입장료"></div>
+      <button class="btn-submit" onclick="addExpense()">추가하기</button>
+    </div>
+
+    <div class="expense-list" id="expense-list"></div>
+  </div>
+</div>
+
+<script>
+// ─── STORAGE ───
+const KEY = 'cph_hel_2025_v3';
+function load() { try { return JSON.parse(localStorage.getItem(KEY)) || {}; } catch { return {}; } }
+function save(data) { localStorage.setItem(KEY, JSON.stringify(data)); toast('저장됨 ✓'); }
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(t._t); t._t = setTimeout(() => t.classList.remove('show'), 1800);
+}
+
+// ─── NAV ───
+function showPage(id, btn) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  btn.classList.add('active');
+  if (id === 'currency') updateRateCards();
+  if (id === 'expense') renderExpenses();
+}
+
+// ─── ITINERARY DATA ───
+const DEFAULT_DAYS = {
+  dk: [
+    { id:'d0', dow:'Sat', d:'16', title:'출발 — Detroit → Copenhagen', sub:'DTW → JFK → CPH · 뉴욕 경유 점심 · 비행 중 일기', tags:[{c:'tm',t:'DTW → JFK → CPH (델타)'},{c:'tv',t:'뉴욕 경유 중 점심'},{c:'tv',t:'비행 중 일기 쓰기'},{c:'tv',t:'필름사진'}], note:'델타 $649 (바우처 $200 적용). 뉴욕 경유 시간에 따라 공항 밖 점심 가능.' },
+    { id:'d1', dow:'Sun', d:'17', title:'도착 · 뇨레브로 파머스마켓', sub:'새벽 CPH 도착 · 파머스마켓 · Bottega Barlie · 동네 산책', tags:[{c:'tm',t:'새벽 CPH 도착 · 체크인'},{c:'tp',t:'뇨레브로 파머스마켓'},{c:'tf',t:'Bottega Barlie'},{c:'tf',t:'Lille Bakery'},{c:'tv',t:'동네 산책 (계획 없이)'},{c:'tv',t:'필름사진 · 일기'}], note:'새벽 도착이라 오전엔 쉬고 여유 생기면 파머스마켓으로. HAY House · Studio Arhoj 일요일 오픈 ✅' },
+    { id:'d2', dow:'Mon', d:'18', title:'루이지애나 미술관', sub:'세상에서 가장 아름다운 미술관 · 기차 30분 · 미술관 카페', tags:[{c:'tp',t:'Louisiana Museum of Modern Art'},{c:'tf',t:'미술관 카페'},{c:'tv',t:'일기·글쓰기'},{c:'tv',t:'필름사진'},{c:'tw',t:'핀율하우스 월요일 휴무'}], note:'기차 약 30분 (Humlebæk역). 바다 옆 조각 정원에서 일기 쓰기 좋음.' },
+    { id:'d3', dow:'Tue', d:'19', title:'핀율하우스 + Ordrupgaard', sub:'가이드투어 11:30 / 12:15 / 13:30 · BUKA 피스타치오 크루아상', tags:[{c:'tp',t:'핀율하우스 (가이드투어)'},{c:'tp',t:'Ordrupgaard 미술관'},{c:'tf',t:'BUKA bakery — 피스타치오 크루아상'},{c:'tv',t:'필름사진'}], note:'평일 가이드투어: 11:30 / 12:15 / 13:30 중 선택. 사전 예약 추천.' },
+    { id:'d4', dow:'Wed', d:'20', title:'왕립미술관 + Kastellet + 뉘하운', sub:'SMK · 17세기 별 모양 요새 · 운하 산책', tags:[{c:'tp',t:'코펜하겐 왕립미술관 (SMK)'},{c:'tp',t:'Kastellet 요새'},{c:'tp',t:'뉘하운 운하'},{c:'tf',t:'카페'},{c:'tv',t:'필름사진 · 일기'}], note:'세 곳이 도보권. SMK → Kastellet → 뉘하운 순서로 걸어다니기 딱 좋음.' },
+    { id:'d5', dow:'Thu', d:'21', title:'서점 · 도서관 + 자유시간', sub:'로컬 서점 · 도서관 · 카페 호핑 · 쇼핑 없는 날', tags:[{c:'tp',t:'로컬 서점 & 도서관'},{c:'tf',t:'카페 호핑'},{c:'tv',t:'계획 없이 산책'},{c:'tv',t:'일기·글쓰기'},{c:'tw',t:'HAY House · Studio Arhoj 목요일 휴무'}], note:'쇼핑 없는 날. 코펜하겐 공립도서관(Hovedbiblioteket) 추천.' },
+    { id:'d6', dow:'Fri', d:'22', title:'HAY House + Studio Arhoj + 레고', sub:'세라믹 오브제 · 커스텀 레고 · 토르발센스 마켓', tags:[{c:'tp',t:'HAY House'},{c:'tp',t:'Studio Arhoj (세라믹)'},{c:'tp',t:'LEGO Store 커스텀 레고'},{c:'tp',t:'토르발센스 마켓'},{c:'tf',t:'Lille Bakery'},{c:'tv',t:'필름사진'}], note:'HAY House · Studio Arhoj 금요일 오픈 ✅. 구경 자체가 목적인 날.' },
+    { id:'d7', dow:'Sat', d:'23', title:'말뫼 당일치기? + 코펜하겐 마무리', sub:'기차 35분 · 굳이 안 가도 됨 · 마지막 카페 · 산책', tags:[{c:'tp',t:'말뫼 당일치기 (선택)'},{c:'tf',t:'카페·베이커리'},{c:'tv',t:'동네 마지막 산책'},{c:'tv',t:'일기·글쓰기 · 필름사진'}], note:'말뫼: 기차 35분. 안 가면 코펜하겐에서 여유롭게 마무리 — 둘 다 좋음.' },
+    { id:'d8', dow:'Sun', d:'24', title:'헬싱키로 이동', sub:'CPH → HEL 핀에어 08:50 · 06:10 출발', tags:[{c:'tm',t:'CPH → HEL 핀에어 08:50'},{c:'tm',t:'06:10 호텔 출발'},{c:'tf',t:'헬싱키 첫 커피'},{c:'tv',t:'저녁 동네 산책 · 일기'}], note:'VALO 호텔 체크인 (Mannerheimintie — 시내 중심 ✅). 온라인 체크인 전날 밤 미리!' },
+  ],
+  fi: [
+    { id:'d9', dow:'Mon', d:'25', title:'알바 알토 + Arabia + 무민샵 + 사우나', sub:'알토 하우스 · Arabia Museum · 마리메꼬 · Allas Sea Pool', tags:[{c:'tp',t:'알바 알토 하우스'},{c:'tp',t:'Arabia Museum + Iittala'},{c:'tp',t:'무민샵'},{c:'tp',t:'마리메꼬'},{c:'tf',t:'Good Life Coffee'},{c:'tp',t:'Allas Sea Pool 사우나 (저녁)'},{c:'tv',t:'필름사진'}], note:'Studio Aalto는 가이드투어 별도 예약 필요. Arabia Museum은 Iittala 숍 바로 옆.' },
+    { id:'d10', dow:'Tue', d:'26', title:'마지막 아침 · 귀국', sub:'Fazer Café · 마지막 일기 · HEL → DTW 새벽 07:00', tags:[{c:'tf',t:'Fazer Café or Regatta Café'},{c:'tv',t:'마지막 일기 쓰기'},{c:'tp',t:'Fazer 초콜릿 구입'},{c:'tm',t:'HEL → DTW 새벽 07:00'}], note:'새벽 7시 비행 → 04:30 기상. VALO에서 공항까지 택시 약 30분. 전날 밤 짐 미리!' },
+  ]
+};
+
+const DEFAULT_TODOS = [
+  { id:'t0', text:'DTW → CPH 항공권 예약 (델타, $649)', done:true },
+  { id:'t1', text:'시티허브 코펜하겐 예약 ($770, 7박)', done:true },
+  { id:'t2', text:'VALO Hotel 헬싱키 예약 ($154, 2박)', done:true },
+  { id:'t3', text:'핀에어 CPH → HEL 예약 (DKK 978)', done:true },
+  { id:'t4', text:'핀에어 기내 캐리온 추가 (DKK 90)', done:false },
+  { id:'t5', text:'유심 알아보기 (유럽 통합 or 덴마크·핀란드)', done:false },
+  { id:'t6', text:'핀율하우스 가이드투어 예약 (5/19 화요일)', done:false },
+  { id:'t7', text:'Studio Aalto 가이드투어 예약 (5/25 월요일)', done:false },
+  { id:'t8', text:'Allas Sea Pool 사우나 예약 (5/25 저녁)', done:false },
+  { id:'t9', text:'핀에어 온라인 체크인 (출발 36시간 전, 5/23 저녁)', done:false },
+  { id:'t10', text:'여행자 보험 가입', done:false },
+  { id:'t11', text:'여권 유효기간 확인 (출발 기준 6개월 이상)', done:false },
+  { id:'t12', text:'필름 충분히 구입해가기', done:false },
+];
+
+function getState() {
+  const s = load();
+  if (!s.todos) s.todos = DEFAULT_TODOS;
+  if (!s.days) s.days = DEFAULT_DAYS;
+  if (!s.dayChecks) s.dayChecks = {};
+  if (!s.dayOpen) s.dayOpen = {};
+  if (!s.expenses) s.expenses = [];
+  if (!s.rates) s.rates = { dkk: 6.96, eur: 0.93, krw: 1370 };
+  return s;
+}
+
+// ─── TODOS ───
+function renderTodos() {
+  const s = getState();
+  const list = document.getElementById('todo-list');
+  list.innerHTML = '';
+  s.todos.forEach(item => {
+    const div = document.createElement('div');
+    div.className = 'check-item' + (item.done ? ' done' : '');
+    div.dataset.id = item.id;
+    div.innerHTML = `<div class="check-box"></div><span class="check-text">${item.text}</span><button class="check-del" onclick="event.stopPropagation();deleteTodo('${item.id}')" title="삭제">×</button>`;
+    div.onclick = () => toggleTodo(item.id);
+    list.appendChild(div);
+  });
+  updateProgress(s);
+}
+
+function toggleTodo(id) {
+  const s = getState();
+  const item = s.todos.find(t => t.id === id);
+  if (item) item.done = !item.done;
+  save(s); renderTodos();
+}
+
+function deleteTodo(id) {
+  const s = getState();
+  s.todos = s.todos.filter(t => t.id !== id);
+  save(s); renderTodos();
+}
+
+function addTodo() {
+  const inp = document.getElementById('todo-input');
+  const text = inp.value.trim();
+  if (!text) return;
+  const s = getState();
+  s.todos.push({ id: 't' + Date.now(), text, done: false });
+  save(s); renderTodos();
+  inp.value = '';
+}
+
+function updateProgress(s) {
+  if (!s) s = getState();
+  const total = s.todos.length;
+  const done = s.todos.filter(t => t.done).length;
+  const pct = total ? Math.round((done / total) * 100) : 0;
+  document.getElementById('pfill').style.width = pct + '%';
+  document.getElementById('pct').textContent = pct + '%';
+}
+
+// ─── DAYS ───
+function renderDays() {
+  const s = getState();
+  ['dk','fi'].forEach(city => {
+    const container = document.getElementById('days-' + city);
+    container.innerHTML = '';
+    (s.days[city] || []).forEach(day => {
+      container.appendChild(buildDayCard(day, s));
+    });
+  });
+}
+
+function buildDayCard(day, s) {
+  const isOpen = s.dayOpen && s.dayOpen[day.id];
+  const isChecked = s.dayChecks && s.dayChecks[day.id];
+  const div = document.createElement('div');
+  div.className = 'day-card' + (isOpen ? ' open' : '');
+  div.dataset.id = day.id;
+  div.innerHTML = `
+    <div class="day-header" onclick="toggleDayOpen('${day.id}')">
+      <div class="day-num"><span class="day-dow">${day.dow}</span><span class="day-d">${day.d}</span></div>
+      <div class="vr"></div>
+      <div class="day-info">
+        <div class="day-title-text">${day.title}</div>
+        <div class="day-sub">${day.sub}</div>
+      </div>
+      <div class="day-chk${isChecked?' on':''}" onclick="event.stopPropagation();toggleDayCheck('${day.id}')"></div>
+      <svg class="chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 6l4 4 4-4"/></svg>
+    </div>
+    <div class="day-body">
+      <div class="tags">${day.tags.map(t=>`<span class="tag ${t.c}">${t.t}</span>`).join('')}</div>
+      ${day.note ? `<div class="day-note">${day.note}</div>` : ''}
+      <div style="display:flex;justify-content:flex-end;margin-top:10px">
+        <button class="btn-edit-day" onclick="startEdit('${day.id}')">수정</button>
+      </div>
+    </div>
+    <div class="day-edit">
+      <textarea class="edit-field" id="edit-title-${day.id}" rows="1" placeholder="제목">${day.title}</textarea>
+      <textarea class="edit-field" id="edit-sub-${day.id}" rows="1" placeholder="한 줄 요약">${day.sub}</textarea>
+      <textarea class="edit-field" id="edit-tags-${day.id}" rows="2" placeholder="태그 (쉼표로 구분, 예: tp:루이지애나 미술관, tf:카페)">${day.tags.map(t=>t.c+':'+t.t).join(', ')}</textarea>
+      <textarea class="edit-field" id="edit-note-${day.id}" rows="2" placeholder="메모">${day.note||''}</textarea>
+      <div class="edit-actions">
+        <button class="btn-cancel-edit" onclick="cancelEdit('${day.id}')">취소</button>
+        <button class="btn-save-edit" onclick="saveEdit('${day.id}')">저장</button>
+      </div>
+    </div>`;
+  return div;
+}
+
+function toggleDayOpen(id) {
+  const s = getState();
+  s.dayOpen[id] = !s.dayOpen[id];
+  save(s);
+  const card = document.querySelector(`.day-card[data-id="${id}"]`);
+  if (card) card.classList.toggle('open', s.dayOpen[id]);
+}
+
+function toggleDayCheck(id) {
+  const s = getState();
+  s.dayChecks[id] = !s.dayChecks[id];
+  save(s);
+  const btn = document.querySelector(`.day-card[data-id="${id}"] .day-chk`);
+  if (btn) btn.classList.toggle('on', s.dayChecks[id]);
+}
+
+function startEdit(id) {
+  const card = document.querySelector(`.day-card[data-id="${id}"]`);
+  if (card) card.classList.add('editing');
+}
+
+function cancelEdit(id) {
+  const card = document.querySelector(`.day-card[data-id="${id}"]`);
+  if (card) card.classList.remove('editing');
+}
+
+function saveEdit(id) {
+  const s = getState();
+  const city = Object.keys(s.days).find(c => s.days[c].some(d => d.id === id));
+  if (!city) return;
+  const day = s.days[city].find(d => d.id === id);
+  day.title = document.getElementById('edit-title-' + id).value.trim() || day.title;
+  day.sub   = document.getElementById('edit-sub-' + id).value.trim() || day.sub;
+  day.note  = document.getElementById('edit-note-' + id).value.trim();
+  const rawTags = document.getElementById('edit-tags-' + id).value;
+  day.tags = rawTags.split(',').map(s => s.trim()).filter(Boolean).map(s => {
+    const idx = s.indexOf(':');
+    if (idx > -1) return { c: s.slice(0, idx).trim(), t: s.slice(idx+1).trim() };
+    return { c: 'tv', t: s };
+  });
+  save(s); renderDays();
+}
+
+function filterCity(city, btn) {
+  document.querySelectorAll('.filters .filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.city-section').forEach(s => {
+    s.style.display = (city === 'all' || s.dataset.city === city) ? '' : 'none';
+  });
+}
+
+// ─── CURRENCY ───
+function saveRates() {
+  const s = getState();
+  s.rates = {
+    dkk: parseFloat(document.getElementById('rate-dkk').value) || 6.96,
+    eur: parseFloat(document.getElementById('rate-eur').value) || 0.93,
+    krw: parseFloat(document.getElementById('rate-krw').value) || 1370,
+  };
+  localStorage.setItem(KEY, JSON.stringify(s));
+  updateRateCards();
+}
+
+function getRates() {
+  return getState().rates || { dkk: 6.96, eur: 0.93, krw: 1370 };
+}
+
+function updateRateCards() {
+  const r = getRates();
+  document.getElementById('rate-dkk').value = r.dkk;
+  document.getElementById('rate-eur').value = r.eur;
+  document.getElementById('rate-krw').value = r.krw;
+  document.getElementById('dkk-to-usd').textContent = (1/r.dkk).toFixed(4);
+  document.getElementById('dkk-to-krw').textContent = Math.round(r.krw/r.dkk).toLocaleString();
+  document.getElementById('eur-to-usd').textContent = (1/r.eur).toFixed(4);
+  document.getElementById('eur-to-krw').textContent = Math.round(r.krw/r.eur).toLocaleString();
+}
+
+function convertFrom(from) {
+  const r = getRates();
+  const val = parseFloat(document.getElementById('c-' + from).value) || 0;
+  let usd;
+  if (from === 'usd') usd = val;
+  else if (from === 'dkk') usd = val / r.dkk;
+  else if (from === 'eur') usd = val / r.eur;
+  else if (from === 'krw') usd = val / r.krw;
+  if (from !== 'usd') setIfNotFocus('c-usd', +usd.toFixed(2));
+  if (from !== 'dkk') setIfNotFocus('c-dkk', +(usd * r.dkk).toFixed(2));
+  if (from !== 'eur') setIfNotFocus('c-eur', +(usd * r.eur).toFixed(4));
+  if (from !== 'krw') setIfNotFocus('c-krw', +Math.round(usd * r.krw));
+}
+
+function setIfNotFocus(id, val) {
+  const el = document.getElementById(id);
+  if (document.activeElement !== el) el.value = val || '';
+}
+
+// ─── EXPENSE ───
+const DATES = [
+  '5/16 (토) 출발','5/17 (일) 코펜하겐 도착','5/18 (월) 루이지애나','5/19 (화) 핀율하우스',
+  '5/20 (수) 왕립미술관','5/21 (목) 서점·자유','5/22 (금) HAY·레고','5/23 (토) 말뫼?',
+  '5/24 (일) 헬싱키 이동','5/25 (월) 알토·사우나','5/26 (화) 귀국'
+];
+const CAT_ICON = { food:'🍽', trans:'🚇', stay:'🏨', shop:'🛍', enter:'🎫', other:'📌' };
+const CAT_LABEL = { food:'음식·카페', trans:'교통', stay:'숙소', shop:'쇼핑', enter:'관광·입장', other:'기타' };
+
+function initDateSelect() {
+  const sel = document.getElementById('exp-date');
+  DATES.forEach(d => { const o = document.createElement('option'); o.value = d; o.textContent = d; sel.appendChild(o); });
+}
+
+function addExpense() {
+  const date = document.getElementById('exp-date').value;
+  const cat  = document.getElementById('exp-cat').value;
+  const cur  = document.getElementById('exp-currency').value;
+  const amt  = parseFloat(document.getElementById('exp-amount').value);
+  const desc = document.getElementById('exp-desc').value.trim();
+  if (!amt || amt <= 0 || !desc) { toast('금액과 내용을 입력해주세요'); return; }
+  const s = getState();
+  const r = s.rates || { dkk: 6.96, eur: 0.93, krw: 1370 };
+  let usd = cur === 'USD' ? amt : cur === 'DKK' ? amt/r.dkk : amt/r.eur;
+  s.expenses.push({ id: 'e' + Date.now(), date, cat, cur, amt, desc, usd: +usd.toFixed(2) });
+  save(s); renderExpenses();
+  document.getElementById('exp-amount').value = '';
+  document.getElementById('exp-desc').value = '';
+}
+
+function deleteExpense(id) {
+  const s = getState();
+  s.expenses = s.expenses.filter(e => e.id !== id);
+  save(s); renderExpenses();
+}
+
+function renderExpenses() {
+  const s = getState();
+  const list = document.getElementById('expense-list');
+  const expenses = s.expenses || [];
+  // summary
+  const totalUsd = expenses.reduce((a, e) => a + e.usd, 0);
+  const totalDkk = expenses.filter(e => e.cur === 'DKK').reduce((a, e) => a + e.amt, 0);
+  const totalEur = expenses.filter(e => e.cur === 'EUR').reduce((a, e) => a + e.amt, 0);
+  document.getElementById('total-usd').textContent = '$' + totalUsd.toFixed(2);
+  document.getElementById('total-dkk').textContent = totalDkk.toFixed(0) + ' kr';
+  document.getElementById('total-eur').textContent = '€' + totalEur.toFixed(2);
+  document.getElementById('total-count').textContent = expenses.length;
+  // group by date
+  if (!expenses.length) {
+    list.innerHTML = '<div class="empty-state">아직 지출 내역이 없어요.<br>여행 중에 하나씩 추가해보세요 ✈️</div>';
+    return;
+  }
+  const grouped = {};
+  DATES.forEach(d => { grouped[d] = []; });
+  expenses.forEach(e => { if (grouped[e.date]) grouped[e.date].push(e); });
+  list.innerHTML = '';
+  DATES.forEach(date => {
+    const items = grouped[date];
+    if (!items.length) return;
+    const dayTotal = items.reduce((a, e) => a + e.usd, 0);
+    const grp = document.createElement('div');
+    grp.className = 'day-expense-group';
+    grp.innerHTML = `<div class="day-expense-header"><span class="day-expense-date">${date}</span><span class="day-expense-total">≈ $${dayTotal.toFixed(2)}</span></div>`;
+    items.forEach(e => {
+      const row = document.createElement('div');
+      row.className = 'expense-item';
+      const sym = e.cur === 'USD' ? '$' : e.cur === 'DKK' ? 'kr ' : '€';
+      row.innerHTML = `<div class="exp-cat cat-${e.cat}">${CAT_ICON[e.cat]}</div><div class="exp-info"><div class="exp-name">${e.desc}</div><div class="exp-meta">${CAT_LABEL[e.cat]} · ≈ $${e.usd.toFixed(2)}</div></div><div class="exp-amt">${sym}${e.amt.toLocaleString()}</div><button class="exp-del" onclick="deleteExpense('${e.id}')">×</button>`;
+      grp.appendChild(row);
+    });
+    list.appendChild(grp);
+  });
+}
+
+// ─── INIT ───
+(function init() {
+  const s = getState();
+  // load rates into inputs
+  document.getElementById('rate-dkk').value = s.rates.dkk;
+  document.getElementById('rate-eur').value = s.rates.eur;
+  document.getElementById('rate-krw').value = s.rates.krw;
+  initDateSelect();
+  renderTodos();
+  renderDays();
+  updateRateCards();
+  renderExpenses();
+})();
+</script>
+</body>
+</html>
